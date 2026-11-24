@@ -54,9 +54,18 @@ def check_excuse(text):
 
 
 def write_entry(out_path):
+    """Validate, write, then read the file back and re-validate it.
+
+    The read-back is the point: the judge reads the file, not the
+    string in memory, so a write that silently truncated or mangled
+    the line must fail here, loudly, instead of shipping a zero.
+    """
     line = check_excuse(EXCUSE)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(line, encoding="utf-8")
+    written = out_path.read_text(encoding="utf-8")
+    if check_excuse(written) != line:
+        sys.exit("gate: written file does not match the validated line")
     return line
 
 
